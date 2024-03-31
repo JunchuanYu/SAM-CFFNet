@@ -399,7 +399,8 @@ class SAM_CDFFNet(nn.Module):
                             window_size=encoder_mode['window_size'],
                             global_attn_indexes=encoder_mode['global_attn_indexes'],
                         )
-        self.load_weight(args.sam_pretrained_weights)
+        if args.sam_pretrained_weights != None:
+            self.load_weight(args.sam_pretrained_weights)
 
         # 冻结 encoder
         for k, p in self.image_encoder.named_parameters():

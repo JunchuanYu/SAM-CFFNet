@@ -9,8 +9,8 @@ Laidian Xi, [Junchuan Yu](https://github.com/JunchuanYu)☨, Daqing Ge, Yunxuan 
 ## To Do List
 * **[2024.02.23]** Paper submission in review process.
 * **[2023.03.17]** Dataset uploaded.
-* **[ ]** Code test.
-* **[ ]** Code realease.
+* **[2024.03.30]** Code test.
+* **[2024.03.30]** Code realease.
 
 ## Dataset
 The landslide datasets used in this study are all open source datasets, and the links to access the datasets and the literature are shown below
@@ -21,7 +21,25 @@ The landslide datasets used in this study are all open source datasets, and the 
 ## SAM-CDFFNet
 ![](https://pic3.zhimg.com/100/v2-ed1bcb87855feb9e4b8661eb503b07b2_r.jpg 'SAM-CDFFNet')
 + SAM-CDFFNet backbone from [SAM](https://github.com/facebookresearch/segment-anything), some code references [Attention UNet](https://github.com/EdgarLefevre/Attention_Unet_Pytorch), [HRNet](https://link.zhihu.com/?target=https%3A//github.com/HRNet), [Deeplabv3+](https://github.com/yassouali/pytorch_segmentation/blob/master/models/deeplabv3_plus.py). SAM-CDFFNet achieved the highest accuracy across three open-source remote sensing landslide datasets compared to other contrastive models.
-+ The code is currently being organized and will be uploaded in the future. Thank you for your patience and stay tuned for updates!
++ The experimental code has been uploaded, and the training and validation of the model can be achieved through the ipynb file in it, and the supporting library information of the code is shown below:
+<center>
+
+|Package                    |Version|
+|:----:  |:----: |
+| GDAL                      |3.6.2|
+| h5py                      |3.9.0|
+| matplotlib                |3.7.2|
+| numpy                     |1.24.1|
+| opencv-python             |4.8.0.74|
+| scipy                     |1.10.1|
+| tensorboard               |2.10.1|
+| tensorboardX              |2.6.2.2|
+| torch                     |1.12.1|
+| torchsummary              |1.5.1|
+| torchvision               |0.13.1|
+| tqdm                      |4.65.0|
+
+</center>
 
 ## Acknowledgement
 + [SAM](https://github.com/facebookresearch/segment-anything).  SAM is the Segment Anything Model (SAM) proposed by Meta, which breaks through the boundaries of segmentation and greatly promotes the development of basic computer vision models.

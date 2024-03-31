@@ -253,8 +253,8 @@ class jpeg_png_Dataset(torch.utils.data.Dataset):
 
         self.mask_transform = torchvision.transforms.Compose([
         torchvision.transforms.Resize((self.inp_size, self.inp_size)),
-        torchvision.transforms.Grayscale(),  # 将图像转换为灰度模式
-        torchvision.transforms.Lambda(lambda x: x.point(lambda p: p > 128 and 255)),  # 进行二值化操作
+        # torchvision.transforms.Grayscale(),  # 将图像转换为灰度模式
+        # torchvision.transforms.Lambda(lambda x: x.point(lambda p: p > 128 and 255)),  # 进行二值化操作
         torchvision.transforms.ToTensor(),
     ])
         
@@ -266,10 +266,39 @@ class jpeg_png_Dataset(torch.utils.data.Dataset):
 
         label_arry = Image.open(self.labels_dir + os.sep + self.images[i][:-5] + '.png')
         label_arry = np.array(label_arry).astype(np.uint8)
-        PILlabel = Image.fromarray(label_arry) 
+        PILlabel = Image.fromarray(label_arry*255) 
         return self.img_transform(PILimg),  self.mask_transform(PILlabel)
 
+import matplotlib.pyplot as plt
+def display_images_with_predictions_and_labels(image1, prediction1, label1, image2, prediction2, label2):
+    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
 
+    axs[0, 0].imshow(np.transpose(image1, (1,2,0)))
+    axs[0, 0].axis('off')
+    axs[0, 0].set_title('Image 1')
+
+    axs[0, 1].imshow(prediction1)
+    axs[0, 1].axis('off')
+    axs[0, 1].set_title('Prediction 1')
+
+    axs[0, 2].imshow(label1[0])
+    axs[0, 2].axis('off')
+    axs[0, 2].set_title('Label 1')
+
+    axs[1, 0].imshow(np.transpose(image2, (1,2,0)))
+    axs[1, 0].axis('off')
+    axs[1, 0].set_title('Image 2')
+
+    axs[1, 1].imshow(prediction2)
+    axs[1, 1].axis('off')
+    axs[1, 1].set_title('Prediction 2')
+
+    axs[1, 2].imshow(label2[0])
+    axs[1, 2].axis('off')
+    axs[1, 2].set_title('Label 2')
+
+    plt.tight_layout()
+    plt.show()
 
 
 
