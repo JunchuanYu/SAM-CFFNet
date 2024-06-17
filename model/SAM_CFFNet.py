@@ -255,7 +255,7 @@ class Bottle_ASPP(nn.Module):
 
 
 
-class CDFFM(nn.Module):
+class CFFM(nn.Module):
     def __init__(self):
         super().__init__()
         self.MLP_1 = nn.ModuleList([PROMPT_MLP(embedding_dim=1024, mlp_dim=int(256), act = nn.GELU)] * 4)
@@ -336,10 +336,10 @@ class SFE(nn.Module):
         return x
 
 
-class CDFFD(nn.Module):
+class CFFD(nn.Module):
     def __init__(self):
         super().__init__()
-        self.cdffm = CDFFM()
+        self.cdffm = CFFM()
         self.sfe   = SFE()
 
         self.marges = nn.Sequential(
@@ -367,7 +367,7 @@ class CDFFD(nn.Module):
         return x
 
 
-class SAM_CDFFNet(nn.Module):
+class SAM_CFFNet(nn.Module):
     def __init__(self, args):
         super().__init__()
 
@@ -401,12 +401,13 @@ class SAM_CDFFNet(nn.Module):
                         )
         if args.sam_pretrained_weights != None:
             self.load_weight(args.sam_pretrained_weights)
+            print("SAM权重加载成功！")
 
         # 冻结 encoder
         for k, p in self.image_encoder.named_parameters():
             p.requires_grad = False
 
-        self.decoder = CDFFD()
+        self.decoder = CFFD()
         self.img_size = args.inp_size
 
     def forward(self,input):

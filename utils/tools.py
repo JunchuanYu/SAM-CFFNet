@@ -253,8 +253,8 @@ class jpeg_png_Dataset(torch.utils.data.Dataset):
 
         self.mask_transform = torchvision.transforms.Compose([
         torchvision.transforms.Resize((self.inp_size, self.inp_size)),
-        # torchvision.transforms.Grayscale(),  # 将图像转换为灰度模式
-        # torchvision.transforms.Lambda(lambda x: x.point(lambda p: p > 128 and 255)),  # 进行二值化操作
+        torchvision.transforms.Grayscale(),  # 将图像转换为灰度模式
+        torchvision.transforms.Lambda(lambda x: x.point(lambda p: p > 128 and 255)),  # 进行二值化操作
         torchvision.transforms.ToTensor(),
     ])
         
@@ -265,37 +265,25 @@ class jpeg_png_Dataset(torch.utils.data.Dataset):
         PILimg = Image.open(self.images_dir + os.sep + self.images[i])
 
         label_arry = Image.open(self.labels_dir + os.sep + self.images[i][:-5] + '.png')
-        label_arry = np.array(label_arry).astype(np.uint8)
-        PILlabel = Image.fromarray(label_arry*255) 
-        return self.img_transform(PILimg),  self.mask_transform(PILlabel)
+        # label_arry = np.array(label_arry).astype(np.uint8)
+        # PILlabel = Image.fromarray(label_arry*255) 
+        return self.img_transform(PILimg),  self.mask_transform(label_arry)#PILlabel)
 
 import matplotlib.pyplot as plt
-def display_images_with_predictions_and_labels(image1, prediction1, label1, image2, prediction2, label2):
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+def display_images_with_predictions_and_labels(image1, prediction1, label1):
+    fig, axs = plt.subplots(1, 3, figsize=(8, 6))
 
-    axs[0, 0].imshow(np.transpose(image1, (1,2,0)))
-    axs[0, 0].axis('off')
-    axs[0, 0].set_title('Image 1')
+    axs[0].imshow(np.transpose(image1, (1,2,0)))
+    axs[0].axis('off')
+    axs[0].set_title('Image')
 
-    axs[0, 1].imshow(prediction1)
-    axs[0, 1].axis('off')
-    axs[0, 1].set_title('Prediction 1')
+    axs[1].imshow(prediction1[0])
+    axs[1].axis('off')
+    axs[1].set_title('Prediction')
 
-    axs[0, 2].imshow(label1[0])
-    axs[0, 2].axis('off')
-    axs[0, 2].set_title('Label 1')
-
-    axs[1, 0].imshow(np.transpose(image2, (1,2,0)))
-    axs[1, 0].axis('off')
-    axs[1, 0].set_title('Image 2')
-
-    axs[1, 1].imshow(prediction2)
-    axs[1, 1].axis('off')
-    axs[1, 1].set_title('Prediction 2')
-
-    axs[1, 2].imshow(label2[0])
-    axs[1, 2].axis('off')
-    axs[1, 2].set_title('Label 2')
+    axs[2].imshow(label1[0])
+    axs[2].axis('off')
+    axs[2].set_title('True Label')
 
     plt.tight_layout()
     plt.show()
@@ -303,9 +291,9 @@ def display_images_with_predictions_and_labels(image1, prediction1, label1, imag
 
 
 def make_data_loaders(args):
-    data_path = {"BJL":'/home/mw/input/nas5918/DLsys/XLD_DATA/datasets/ALL_OPEN/BJL/jpegpng_256',
-        "L4S":'/home/mw/input/nas5918/DLsys/XLD_DATA/datasets/ALL_OPEN/L4S/jpegpng_256',
-        "GVLM":'/home/mw/input/nas5918/DLsys/XLD_DATA/datasets/ALL_OPEN/GVLM/jpegpng_256'
+    data_path = {"BJL":'/datasets/landslide_dataset/BJ_dataset',
+        "L4S":'/datasets/L4S',
+        "GVLM":'/datasets/GVLM'
     }[args.dataset]
 
     Training_Data = jpeg_png_Dataset(data_path, True)
