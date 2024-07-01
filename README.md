@@ -11,6 +11,7 @@ Laidian Xi, [Junchuan Yu](https://github.com/JunchuanYu)☨, Daqing Ge, Yunxuan 
 * **[2023.03.17]** Dataset uploaded.
 * **[2024.03.30]** Code test.
 * **[2024.03.30]** Code realease.
+* **[2024.07.01]** Code modification
 
 ## Dataset
 The landslide datasets used in this study are all open source datasets, and the links to access the datasets and the literature are shown below
@@ -19,7 +20,7 @@ The landslide datasets used in this study are all open source datasets, and the 
 * GVLM Dataset: [Link](https://github.com/zxk688/GVLM),  [Paper](https://www.sciencedirect.com/science/article/pii/S0924271623000242?dgcid=author).
 
 You can also download our processed data directly:
-[Baidu Disk](https://pan.baidu.com/s/19kVD7E5ECDAJgXcFGIfUtQ?pwd=4thn).
+[Baidu Disk](https://pan.baidu.com/s/1Nb8BAuaAz1Sw7K1bTil85w?pwd=uw1a).
 
 ## SAM-CFFNet
 ![](https://pic1.zhimg.com/100/v2-0c695da78b2119b960785047eaf78bc8_r.jpg 'SAM-CFFNet')
@@ -31,7 +32,8 @@ You can also download our processed data directly:
 
     `/pretrained/sam_vit_l_0b3195.pth`
 
-  - `SAM-CFFNET`:  [Baidu Disk](https://pan.baidu.com/s/12NeTM1GXoQnl24OgG_KbLA?pwd=71ne)    [Goole Drive](https://drive.google.com/drive/folders/1FrJgAsZMcDb3behDEPrTL1kaiFkRhjqq?usp=sharing)
+  - `SAM-CFFNET`:  [Baidu Disk](https://pan.baidu.com/s/1SqI7T_yGvmm3TPr8GfOMcw?pwd=gd8f#list/path=%2Fsharelink3938030085-566935388116336%2Fsam_cffnet_weight&parentPath=%2Fsharelink3938030085-566935388116336)
+  
     Save the file in your download directory:
 
     `/sam_cffnet_weight/{gvlm_best.pth.tar,BJL_best.pth.tar,L4S_best.pth.tar}`

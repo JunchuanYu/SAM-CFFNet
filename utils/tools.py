@@ -2,6 +2,7 @@ import os
 import csv
 import time
 import torch
+import h5py
 import shutil
 import random
 import string
@@ -9,6 +10,7 @@ from tqdm import tqdm
 from PIL import Image
 import torchvision
 import numpy as np
+from scipy.ndimage import zoom
 import matplotlib.pyplot as plt
 from torch.optim import SGD, Adam, AdamW
 import torch.nn.functional as F
@@ -104,7 +106,6 @@ class Model_save_log(object):
     def get_val_result(self, train_result, val_result, model_dict, optimizer_dict, epoch):
         # 先保存权重
         if val_result['Iou 1'] > self.best_iou_1:
-        # if val_result['accuracy'] > self.best_accuaryes or val_result['Iou 1'] > self.best_iou_1 or val_result['loss'] < self.best_val_loss or val_result['F1score'] > self.best_F1:
             self.best_val_loss  = val_result['loss']
             self.best_accuaryes = val_result['accuracy']
             self.best_iou_1     = val_result['Iou 1'] 
@@ -143,11 +144,6 @@ class Model_save_log(object):
         plt.legend(loc="lower left")
         plt.savefig(self.save_path + os.sep +  self.nickname + '_Loss_Accuracy_epoch.png',dpi = 600)
     def check_csv(self):
-        # andom_string = '_' + ''.join(random.choices(string.ascii_letters + string.digits, k=5)) + '.csv'
-        # if os.path.exists(self.train_csv):
-        #     self.train_csv = self.train_csv[:-4] + andom_string
-        # if os.path.exists(self.val_csv):
-        #     self.val_csv = self.val_csv[:-4] + andom_string
         if os.path.exists(self.train_csv):
             os.remove(self.train_csv)
         if os.path.exists(self.val_csv):
@@ -179,7 +175,6 @@ def training(train_loader, model,  optimizer, epoch, evaluator, args):
         y = batch[1]
 
         rgb, target= x.to(device), y.to(device)
-        rgb = F.interpolate(rgb, scale_factor=4, mode='bilinear')
         output = model(rgb.float())
 
         loss = calc_loss(output, target.float())
@@ -211,10 +206,9 @@ def validationing(val_loader, model, epoch, evaluator, args):
         y = batch[1]
 
         rgb,  target= x.to(device),  y.to(device)
-        rgb = F.interpolate(rgb, scale_factor=4, mode='bilinear')
-
         with torch.no_grad():
             output = model(rgb.float())
+
         loss = calc_loss(output, target.float())
         val_num +=  x.size(0)
         val_loss += loss.data.cpu().numpy() * x.size(0)
@@ -227,47 +221,35 @@ def validationing(val_loader, model, epoch, evaluator, args):
     result_dict = get_result_dict(evaluator, epoch, start_since, time.time(), val_loss, val_num) 
     return result_dict
 
-class jpeg_png_Dataset(torch.utils.data.Dataset):
-    def __init__(self, data_dir,  train = True):
+class h5_Dataset(torch.utils.data.Dataset):
+    def __init__(self, h5_dir, train = True):
         if train:
-            self.images_dir = data_dir + os.sep + 'images' + os.sep + 'train'
-            self.labels_dir = data_dir + os.sep + 'labels' + os.sep + 'train'
+            self.images_dir = h5_dir + os.sep + 'train'
             img_list    = sorted(os.listdir(self.images_dir))
-            images = [i for i in img_list if i.endswith('.jpeg')]
-            random.shuffle(images)
-            self.images = images
+            self.images = [i for i in img_list if i.endswith('.h5')]
+
         else:
-            self.images_dir = data_dir + os.sep + 'images' + os.sep + 'val'
-            self.labels_dir = data_dir + os.sep + 'labels' + os.sep + 'val'
+            self.images_dir = h5_dir + os.sep + 'val'
             img_list    = sorted(os.listdir(self.images_dir))
-            images = [i for i in img_list if i.endswith('.jpeg')]
-            random.shuffle(images)
-            self.images = images
-        
-        self.inp_size=1024
+            self.images = [i for i in img_list if i.endswith('.h5')]
 
         self.img_transform = torchvision.transforms.Compose([
-        torchvision.transforms.Resize((self.inp_size, self.inp_size)),
         torchvision.transforms.ToTensor()
     ])
-
-        self.mask_transform = torchvision.transforms.Compose([
-        torchvision.transforms.Resize((self.inp_size, self.inp_size)),
-        torchvision.transforms.Grayscale(),  # 将图像转换为灰度模式
-        torchvision.transforms.Lambda(lambda x: x.point(lambda p: p > 128 and 255)),  # 进行二值化操作
-        torchvision.transforms.ToTensor(),
-    ])
-        
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, i):
-        PILimg = Image.open(self.images_dir + os.sep + self.images[i])
+        h5data  = h5py.File(self.images_dir + os.sep + self.images[i])
+        rgb = h5data['image'][:]
+        lab = h5data['label'][:]
+        h5data.close()
+        img = self.img_transform(rgb)
 
-        label_arry = Image.open(self.labels_dir + os.sep + self.images[i][:-5] + '.png')
-        # label_arry = np.array(label_arry).astype(np.uint8)
-        # PILlabel = Image.fromarray(label_arry*255) 
-        return self.img_transform(PILimg),  self.mask_transform(label_arry)#PILlabel)
+        lab = np.where(lab <= 128, 0, 1)
+        lab = torch.from_numpy(lab)
+        lab = torch.unsqueeze(lab, dim=0)
+        return img,  lab
 
 import matplotlib.pyplot as plt
 def display_images_with_predictions_and_labels(image1, prediction1, label1):
@@ -291,15 +273,15 @@ def display_images_with_predictions_and_labels(image1, prediction1, label1):
 
 
 def make_data_loaders(args):
-    data_path = {"BJL":'/datasets/landslide_dataset/BJ_dataset',
-        "L4S":'/datasets/L4S',
-        "GVLM":'/datasets/GVLM'
+    data_path = {"BJL":'/dataset/20240621/BJL',
+                "L4S":'/dataset/20240621/L4S',
+                "GVLM":'/dataset/20240621/GVLM'
     }[args.dataset]
 
-    Training_Data = jpeg_png_Dataset(data_path, True)
-    valing_Data   = jpeg_png_Dataset(data_path, False)
+    Training_Data = h5_Dataset(data_path, True)
+    valing_Data   = h5_Dataset(data_path, False)
 
     print(f"Training_Data : {len(Training_Data)}    valing_Data: {len(valing_Data)}")
-    train_loader = torch.utils.data.DataLoader(Training_Data, batch_size=args.batch_size, shuffle=False,drop_last=True)#, collate_fn=collate_fn, shuffle=False)
-    valid_loader = torch.utils.data.DataLoader(valing_Data, batch_size=args.batch_size, shuffle=False,drop_last=True)#,  collate_fn=collate_fn, shuffle=False) 
+    train_loader = torch.utils.data.DataLoader(Training_Data, batch_size=args.batch_size, shuffle=False,drop_last=True)
+    valid_loader = torch.utils.data.DataLoader(valing_Data, batch_size=args.batch_size, shuffle=False,drop_last=True)
     return train_loader, valid_loader
